@@ -1,13 +1,25 @@
-# Gacha Odds & Pity Auditor
+# Gacha Economy Tool Suite
 
 ## Overview
-The **Gacha Odds & Pity Auditor** is an advanced cross-LLM AI Skill designed for Game Producers and Economy Designers. 
+The **Gacha Economy Tool Suite** is a collection of advanced, cross-LLM AI Skills designed for Game Producers and Economy Designers. 
 
-Hidden costs, broken economies, and perceived unfairness in gacha systems can lead to massive community backlash and player churn. This tool acts as an automated Game Economy Data Scientist, analyzing complex gacha rules (like soft pity, hard pity, and 50/50 mechanics) to expose the true Effective Drop Rate (EDR), real-world Expected Value (EV), and Worst-Case Scenario costs. 
+Hidden costs, broken economies, and perceived unfairness in gacha systems can lead to massive community backlash and player churn. This repository provides a suite of automated Game Economy Data Scientist "Skills." Each tool analyzes complex gacha rules (like soft pity, sparking, shard drops, and kompu gacha) to expose the true Effective Drop Rate (EDR), real-world Expected Value (EV), legal compliance risks, and player frustration points.
 
-By running your banner configurations through this auditor, you can identify risky tuning thresholds and balance your game economy *before* player outrage occurs.
+By running your monetization configurations through these auditors, you can identify risky tuning thresholds and balance your game economy *before* player outrage occurs.
 
-## Example Use Cases
+## The Skill Suite
+
+This repository contains several specialized AI skills located in the `skills/` directory.
+
+*   **[Gacha Odds & Pity Auditor](skills/gacha-pity-auditor/SKILL.md):** Analyzes base rates, soft pity, and hard pity to calculate the true Effective Drop Rate (EDR) and Expected Value.
+*   **[Sparking vs. Pity Simulator](skills/sparking-vs-pity-simulator/SKILL.md):** Compares the economic and psychological differences between "Hard Pity" and "Sparking" (token collection) mechanics.
+*   **[Pool Dilution Calculator](skills/pool-dilution-calculator/SKILL.md):** Calculates the probability drop-off over time as new characters are permanently added to a standard banner.
+*   **[Shard Economy Analyzer](skills/shard-economy-analyzer/SKILL.md):** Analyzes fragment/shard gacha mechanics, calculates average pulls to unlock, and predicts "wasted shard" frustration.
+*   **[Lootbox Compliance Generator](skills/lootbox-compliance-generator/SKILL.md):** Formats drop rates into legally compliant "Consolidated Drop Rate" tables for App Store and EU regulations.
+*   **[Kompu Gacha Risk Detector](skills/kompu-gacha-detector/SKILL.md):** Audits event mechanics for complete-the-set traits, calculating the exponential cost curve of the final missing piece.
+*   **[Battle Pass ROI Calculator](skills/battle-pass-roi-calculator/SKILL.md):** Calculates the Premium Currency Equivalent (PCE) to determine if a Battle Pass's stated value multiplier is accurate.
+
+## Example Use Cases (Gacha Pity Auditor)
 
 The auditor adapts to various monetization models and economic complexities. Below are two hypothetical examples demonstrating how the auditor dissects mechanics and uncovers hidden risks.
 
@@ -22,26 +34,22 @@ The auditor adapts to various monetization models and economic complexities. Bel
 
 ## Installation & Usage
 
-This skill is designed to be used as a System Prompt or Custom GPT instruction.
+These skills are completely platform-agnostic and are designed to be used as System Prompts or Custom GPT instructions.
+
+1. Navigate to the `skills/` directory and open the `SKILL.md` file for the tool you want to use.
+2. Copy the text starting from `# [Name] - System Prompt`.
 
 ### ChatGPT (Custom GPT)
 1. Go to "Explore" > "Create a GPT".
-2. Paste the contents of `system_prompt.md` into the **Instructions** box.
-3. Test the GPT by pasting the contents of `test_case_input.md` into the chat.
+2. Paste the copied `SKILL.md` contents into the **Instructions** box.
 
 ### Anthropic Claude (Projects / System Prompt)
 1. Create a new Project in Claude.
-2. Under "Custom Instructions", paste the contents of `system_prompt.md`.
-3. Start a new chat within the project and provide the configuration from `test_case_input.md`.
+2. Under "Custom Instructions", paste the `SKILL.md` contents.
 
 ### Google Gemini (Gems / Advanced Prompting)
 1. Create a new "Gem" in Gemini Advanced.
-2. Paste the `system_prompt.md` into the custom instructions area.
-3. Provide the `test_case_input.md` in your first message.
-
-## Files Included
-*   `system_prompt.md`: The core instructions that define the AI's persona, calculation requirements, and strict output formatting.
-*   `test_case_input.md`: A complex, realistic gacha banner configuration to test the AI's mathematical reasoning.
+2. Paste the `SKILL.md` into the custom instructions area.
 
 ## License
 This project is licensed under the MIT License - see below for details.
