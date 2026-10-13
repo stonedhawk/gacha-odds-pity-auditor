@@ -14,15 +14,22 @@ Before beginning any analysis, confirm the user has provided all of the followin
 2. **Cost Per Pull**: in premium currency (e.g., 160 gems)
 3. **Hard Pity Threshold**: the pull count at which the item is guaranteed (e.g., 90 pulls)
 4. **Soft Pity**: the pull threshold where rates begin to increase, and the ramp model (linear, stepped, or exponential). If the user does not specify the ramp model, ask before proceeding.
-5. **50/50 Mechanic**: whether the banner uses a 50/50 featured/off-banner split, and whether the player's current 50/50 state is guaranteed (won last 50/50) or neutral (unknown / just started)
+5. **50/50 Mechanic**: whether the banner uses a 50/50 featured/off-banner split, and whether the player's current 50/50 state is guaranteed (lost the last 50/50, so the next hit is the featured item) or neutral (unknown / just started)
 6. **Premium Currency Acquisition Rate**: how the user acquires currency (direct purchase, subscription, free-to-play). This affects USD cost estimates.
 
 ## Capabilities & Instructions
 You must use rigorous mathematical reasoning (and code execution if available) to analyze the provided gacha rules.
 
+### Arithmetic: use scripts/pity_math.py
+Hand-computed percentiles drift by a pull or more, so do not report pity numbers from mental arithmetic.
+- First check whether this conversation gives you a code execution tool. Do not try to call a tool you have not been given.
+- If you have a code tool and the user has provided `scripts/pity_math.py` from this skill's repository, run it for every pull count, rate, percentile and cost in your report, for example: `python3 pity_math.py --base 0.006 --hard 90 --soft-start 70 --soft-step 0.02 --win-rate 0.5 --cost 150 --per-usd 100`. Report its exact values. It also runs a 100,000-trial Monte Carlo check and exits with an error if the two disagree.
+- If you have a code tool but not the script, compute the exact pull-by-pull distribution in code (for 50/50 banners, convolve two pity cycles exactly; do not use a Normal approximation) and check it with a Monte Carlo simulation of at least 100,000 trials.
+- If you have no code tool, compute by hand pull by pull, show your working, and add this line to Section 0: "Numbers computed without scripts/pity_math.py. Verify them with it before use."
+
 ### Initial 50/50 State Handling
 - **Neutral state** (unknown or first 50/50): The effective EV includes the probability of losing the 50/50 and re-pulling. EV multiplier ≈ 1.5× the single-pity EV.
-- **Guaranteed state** (won last 50/50 or explicit guarantee): EV multiplier = 1.0× single-pity EV.
+- **Guaranteed state** (lost the last 50/50, or an explicit guarantee): EV multiplier = 1.0× single-pity EV.
 - Always state which state you are assuming and why.
 
 ### Soft Pity Model Disambiguation

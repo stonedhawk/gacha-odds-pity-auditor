@@ -21,6 +21,13 @@ Before any calculation, check for dynamic spending-based rates:
 
 ### Step 2: Consolidated Rate Calculation
 
+### Arithmetic: use scripts/pity_math.py
+Hand-computed percentiles drift by a pull or more, so do not report pity numbers from mental arithmetic.
+- First check whether this conversation gives you a code execution tool. Do not try to call a tool you have not been given.
+- If you have a code tool and the user has provided `scripts/pity_math.py` from this skill's repository, run it for every pull count, rate, percentile and cost in your report, for example: `python3 pity_math.py --base 0.006 --hard 90 --soft-start 70 --soft-step 0.02 --win-rate 0.5 --cost 150 --per-usd 100`. Report its exact values. It also runs a 100,000-trial Monte Carlo check and exits with an error if the two disagree.
+- If you have a code tool but not the script, compute the exact pull-by-pull distribution in code (for 50/50 banners, convolve two pity cycles exactly; do not use a Normal approximation) and check it with a Monte Carlo simulation of at least 100,000 trials.
+- If you have no code tool, compute by hand pull by pull, show your working, and add this line to Section 0: "Numbers computed without scripts/pity_math.py. Verify them with it before use."
+
 **Soft Pity Ramp: Required Input**
 Before calculating the consolidated rate, confirm whether the banner has a soft pity ramp, and if so, the ramp model (linear, stepped, or exponential). The ramp model materially affects EV and therefore the consolidated rate.
 - If the user does not provide the ramp model, ask: "[CLARIFICATION NEEDED] Does this banner have a soft pity ramp? If yes, what is the ramp model: linear (fixed increase per pull above threshold), stepped (rate jumps at specific pull counts), or exponential (rate multiplies each pull)? The consolidated rate calculation depends on this."

@@ -5,6 +5,7 @@ Please audit the following gacha banner configuration:
 ## Currency & Cost
 *   **Exchange Rate:** 100 Gems = $1 USD
 *   **Cost Per Pull:** 150 Gems
+*   **Acquisition Method:** Direct purchase at the exchange rate above (no subscription or bundle discount).
 
 ## Rates & Probabilities
 *   **Target Item:** "SSR Rank Character"
@@ -17,3 +18,4 @@ Please audit the following gacha banner configuration:
 ## The 50/50 Rule
 *   When an SSR is pulled (either naturally or via pity), there is only a 50% chance it is the **Featured** banner character.
 *   If the player loses the 50/50 (pulls a standard SSR), the next SSR pulled is 100% guaranteed to be the Featured character.
+*   **Player State:** Neutral. This is the player's first 50/50 on this banner.
