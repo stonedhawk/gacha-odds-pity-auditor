@@ -21,6 +21,11 @@ Examples:
     python3 scripts/pity_math.py --base 0.006 --hard 90 --soft-start 70 \
         --soft-step 0.02 --win-rate 0.5 --cost 150 --per-usd 100
 
+    # Write the expected-values file used by scripts/check_output.py
+    # (fresh and guaranteed 50/50 states side by side)
+    python3 scripts/pity_math.py --base 0.006 --hard 90 --soft-start 70 \
+        --soft-step 0.02 --win-rate 0.5 --cost 150 --per-usd 100 --expected
+
 Standard library only. Python 3.8+.
 """
 
@@ -161,6 +166,48 @@ def summarize(pmf):
     }
 
 
+# Tolerances check_output.py applies when comparing a model's numbers.
+TOLERANCE = {
+    "percentile_pulls": 0,        # P50, P90 and worst case must match exactly
+    "expected_pulls": 0.1,        # mean pulls, reported to 1 decimal
+    "effective_rate_pct": 0.01,   # percentage points, reported to 2 decimals
+    "cost_relative": 0.005,       # currency and USD: 0.5% covers rounding the mean first
+    "ratio_relative": 0.01,       # a stated ratio vs. the two numbers it divides
+}
+
+
+def metric_block(pmf, cost=None, per_usd=None):
+    s = summarize(pmf)
+    out = {
+        "expected_pulls": round(s["expected_pulls"], 4),
+        "effective_rate_pct": round(100 * s["effective_rate"], 4),
+        "p50_pulls": s["p50"],
+        "p90_pulls": s["p90"],
+        "max_pulls": s["worst_case"],
+    }
+    if cost:
+        for key, pulls in (("expected", s["expected_pulls"]), ("p50", s["p50"]),
+                           ("p90", s["p90"]), ("max", s["worst_case"])):
+            out[f"{key}_cost"] = round(pulls * cost, 2)
+            if per_usd:
+                out[f"{key}_usd"] = round(pulls * cost / per_usd, 2)
+    return out
+
+
+def expected_values(args, pmf):
+    """Expected numbers for a test case, in the format check_output.py reads."""
+    metrics = {"any_item": metric_block(pmf, args.cost, args.per_usd)}
+    if args.win_rate < 1.0:
+        metrics["featured_fresh"] = metric_block(featured_pmf(pmf, args.win_rate, False), args.cost, args.per_usd)
+        metrics["featured_guaranteed"] = metric_block(pmf, args.cost, args.per_usd)
+    cmd = ["python3", "scripts/pity_math.py"] + [a for a in sys.argv[1:]]
+    return {
+        "generated_by": " ".join(cmd),
+        "tolerance": TOLERANCE,
+        "metrics": metrics,
+    }
+
+
 def parse_overrides(items):
     out = {}
     for item in items or []:
@@ -184,6 +231,8 @@ def main(argv=None):
     ap.add_argument("--trials", type=int, default=100_000, help="Monte Carlo trials (default 100000)")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--json", action="store_true", help="print JSON instead of a table")
+    ap.add_argument("--expected", action="store_true",
+                    help="print expected values (fresh and guaranteed states) for scripts/check_output.py")
     args = ap.parse_args(argv)
 
     if not 0.0 < args.base <= 1.0:
@@ -218,6 +267,9 @@ def main(argv=None):
             print(f"error: {name} exact mean {exact:.3f} vs simulated {sim:.3f} differ by more than 2%", file=sys.stderr)
             return 1
 
+    if args.expected:
+        print(json.dumps(expected_values(args, pmf), indent=2))
+        return 0
     if args.json:
         print(json.dumps(result, indent=2))
         return 0
