@@ -11,7 +11,7 @@ Please audit the following gacha banner configuration:
 *   **Base Rate:** 0.6% chance to pull an SSR on any given non-pity pull.
 
 ## Pity Mechanics
-*   **Soft Pity:** Starting at pull 70, the probability of pulling an SSR increases by a flat 2.0% per subsequent pull (e.g., Pull 70 = 2.6%, Pull 71 = 4.6%, etc.).
+*   **Soft Pity:** Starting at pull 70, the probability of pulling an SSR goes up on each pull until hard pity.
 *   **Hard Pity:** An SSR is 100% guaranteed on pull 90 if one has not been obtained yet.
 
 ## The 50/50 Rule

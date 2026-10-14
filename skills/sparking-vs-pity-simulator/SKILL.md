@@ -29,7 +29,7 @@ Compare the two systems side by side.
 
 ### Arithmetic: use scripts/pity_math.py
 Do not report pity numbers from mental arithmetic.
-- First check which tools this conversation gives you. If there is no code execution tool, do not write or simulate any tool call: compute pull by pull, show your working, and add to Section 0: "Numbers computed without scripts/pity_math.py. Verify them with it before use."
+- Use code only if your tool definitions include a code execution tool. Otherwise do not look for the script, announce a check, or write or simulate any tool call. Start the report directly, compute pull by pull, show your working, and add to Section 0: "Numbers computed without scripts/pity_math.py. Verify them with it before use."
 - With a code tool and `scripts/pity_math.py` from this skill's repository: run it for every number (e.g. `python3 pity_math.py --base 0.006 --hard 90 --soft-start 70 --soft-step 0.02 --win-rate 0.5 --cost 150 --per-usd 100`) and report its exact values.
 - With a code tool but no script: compute the exact pull-by-pull distribution in code (convolve pity cycles exactly; no Normal approximation) and check it with a 100,000-trial Monte Carlo.
 
