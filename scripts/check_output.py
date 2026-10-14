@@ -37,8 +37,12 @@ import sys
 NUM = r"\$?\s?\d[\d,]*(?:\.\d+)?"
 UNIT = r"(?:\s?(?:%|pulls?|gems?|currency|USD))?"
 # Markdown emphasis or code marks may wrap any part: "$123.00 / $111.00 = **1.11×**"
-RATIO = re.compile(rf"[*`_]*({NUM}){UNIT}[*`_]*\s*/\s*[*`_]*({NUM}){UNIT}[*`_]*\s*=\s*[*`_]*(\d+(?:\.\d+)?)\s?[×x]")
-BARE_MULT = re.compile(r"(?<![\w./])\d+(?:\.\d+)?\s?[×x](?!\s*[\d$(])")
+# Each operand may carry a short label with the number in parentheses:
+# "Guaranteed EV ($104.55) / Fresh EV ($156.82) = 0.67×"
+OPERAND = rf"(?:[A-Za-z][A-Za-z0-9 '\-]{{0,40}}?\(\s*)?[*`_]*({NUM}){UNIT}[*`_]*\s*\)?"
+RATIO = re.compile(rf"{OPERAND}\s*/\s*{OPERAND}\s*=\s*[*`_]*(\d+(?:\.\d+)?)\s?[×x]")
+# A number right after "^" is an exponent ("q^89 × q^89"), not a multiplier.
+BARE_MULT = re.compile(r"(?<![\w./^])\d+(?:\.\d+)?\s?[×x](?!\s*[\d$(])")
 BARE_WORDS = re.compile(
     r"\b(twice|double[sd]?(?!-|\s+jeopardy)|triple[sd]?(?!-)|half as|halves|times as|\d+(?:\.\d+)?%\s+(?:more|less|higher|lower|cheaper|premium|increase|decrease))\b",
     re.IGNORECASE,

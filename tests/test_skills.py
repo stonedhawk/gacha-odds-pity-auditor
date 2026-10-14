@@ -26,8 +26,9 @@ class TestSkillLength(unittest.TestCase):
 
 # Rules each skill must keep, as exact text. If you reword a rule on purpose,
 # update the text here in the same change.
-TOOLS_RULE = ("Use code only if your tool definitions include a code execution tool. Otherwise do not look for "
-              "the script, announce a check, or write or simulate any tool call.")
+TOOLS_RULE = ("If you can run code in this conversation, run scripts/pity_math.py. "
+              "If you can't, compute every number yourself and continue.")
+NEVER_SEARCH_RULE = "Never search for the script, ask the user for it, or stop to look for it."
 RATIO_RULE = "Write every ratio or comparison as the two numbers and their quotient"
 PITY_MATH_SKILLS = ["gacha-pity-auditor", "sparking-vs-pity-simulator", "lootbox-compliance-generator"]
 REQUIRED_RULES = {
@@ -66,6 +67,7 @@ REQUIRED_RULES = {
 }
 for _skill in PITY_MATH_SKILLS:
     REQUIRED_RULES[_skill]["check-your-tools rule"] = TOOLS_RULE
+    REQUIRED_RULES[_skill]["never search for the script"] = NEVER_SEARCH_RULE
     REQUIRED_RULES[_skill]["ratio rule"] = RATIO_RULE
 
 
@@ -181,6 +183,16 @@ class TestCheckOutput(unittest.TestCase):
         r = self.run_check("Losing the 50/50 is roughly twice as costly.\n" + self.GOOD)
         self.assertEqual(r.returncode, 1)
         self.assertIn("twice", r.stdout)
+
+    def test_labelled_ratio_is_recognised(self):
+        r = self.run_check(self.GOOD + "\nFresh P90 ($232.50) / Fresh P50 ($121.50) = 1.91×, so 1.91× it is.\n")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        r = self.run_check(self.GOOD + "\nFresh P90 ($232.50) / Fresh P50 ($121.50) = 1.50×\n")
+        self.assertEqual(r.returncode, 1)
+
+    def test_exponents_are_not_multipliers(self):
+        r = self.run_check(self.GOOD + "\nBoth cycles reach hard pity with probability q^89 × q^89.\n")
+        self.assertEqual(r.returncode, 0, r.stdout)
 
     def test_idioms_are_not_comparisons(self):
         r = self.run_check(self.GOOD + "\nFresh losers face double jeopardy at the double-pity ceiling.\n")

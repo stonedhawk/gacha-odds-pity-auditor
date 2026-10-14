@@ -103,5 +103,9 @@ Every `SKILL.md` is under 7,500 characters (a test enforces this), so each fits 
 1. In the Gemini app, create a new **Gem**.
 2. Paste the copied text into the Gem's **Instructions**.
 
+## Known limitations
+
+- **Some runs stop instead of computing.** In 6 runs of `test_case_minimal.md` with no code tool (Claude through the Claude Code CLI), 4 finished with every number exact; 2 stopped at the start, saying they would run or look for `scripts/pity_math.py`. The CLI adds environment details that make the model believe it can run code, which an ordinary chat does not, so this may not happen in a chat app. If it does, ask the model to compute the numbers itself.
+
 ## License
 This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Rahul M Shah.
