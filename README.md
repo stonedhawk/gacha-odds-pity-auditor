@@ -1,79 +1,111 @@
 # Gacha Economy Tool Suite
 
 ## Overview
-The **Gacha Economy Tool Suite** is a collection of advanced, cross-LLM AI Skills designed for Game Producers and Economy Designers. 
+The **Gacha Economy Tool Suite** is a collection of system prompts ("skills") for Game Producers and Economy Designers. Each one is a plain-text prompt you load into an LLM, so it works with any chat model that accepts a system prompt or custom instructions.
 
-Hidden costs, broken economies, and perceived unfairness in gacha systems can lead to massive community backlash and player churn. This repository provides a suite of automated Game Economy Data Scientist "Skills." Each tool analyzes complex gacha rules (like soft pity, sparking, shard drops, and kompu gacha) to expose the true Effective Drop Rate (EDR), real-world Expected Value (EV), legal compliance risks, and player frustration points.
+Each skill gives the model a persona, the inputs it must collect, the formulas to use, input validation rules and a fixed report format. Together they cover soft pity, hard pity, sparking, shard drops, pool dilution, battle pass value and kompu gacha, and ask the model to report Effective Drop Rate (EDR), Expected Value (EV), cost percentiles (P50/P90/worst case), compliance risk flags and player frustration points.
 
-By running your monetization configurations through these auditors, you can identify risky tuning thresholds and balance your game economy *before* player outrage occurs.
+The model does the math, so check its numbers before you act on them (see Checking the Math). Three skills (Pity Auditor, Lootbox Compliance Generator, Kompu Gacha Detector) tell the model to run code or a simulation when it can. The skills are not legal or financial advice.
 
 ## The Skill Suite
 
-This repository contains several specialized AI skills located in the `skills/` directory.
+The `skills/` directory contains seven skills:
 
-*   **[Gacha Odds & Pity Auditor](skills/gacha-pity-auditor/SKILL.md):** Analyzes base rates, soft pity, and hard pity to calculate the true Effective Drop Rate (EDR) and Expected Value.
-*   **[Sparking vs. Pity Simulator](skills/sparking-vs-pity-simulator/SKILL.md):** Compares the economic and psychological differences between "Hard Pity" and "Sparking" (token collection) mechanics.
-*   **[Pool Dilution Calculator](skills/pool-dilution-calculator/SKILL.md):** Calculates the probability drop-off over time as new characters are permanently added to a standard banner.
-*   **[Shard Economy Analyzer](skills/shard-economy-analyzer/SKILL.md):** Analyzes fragment/shard gacha mechanics, calculates average pulls to unlock, and predicts "wasted shard" frustration.
-*   **[Lootbox Compliance Generator](skills/lootbox-compliance-generator/SKILL.md):** Formats drop rates into legally compliant "Consolidated Drop Rate" tables for App Store and EU regulations.
-*   **[Kompu Gacha Risk Detector](skills/kompu-gacha-detector/SKILL.md):** Audits event mechanics for complete-the-set traits, calculating the exponential cost curve of the final missing piece.
-*   **[Battle Pass ROI Calculator](skills/battle-pass-roi-calculator/SKILL.md):** Calculates the Premium Currency Equivalent (PCE) to determine if a Battle Pass's stated value multiplier is accurate.
+*   **[Gacha Odds & Pity Auditor](skills/gacha-pity-auditor/SKILL.md):** Analyzes base rates, soft pity, hard pity and the 50/50 rule to calculate Effective Drop Rate (EDR), Expected Value and P50/P90/worst-case cost.
+*   **[Sparking vs. Pity Simulator](skills/sparking-vs-pity-simulator/SKILL.md):** Compares the cost distribution, carry-over value and player psychology of "Hard Pity" and "Sparking" (token collection) systems.
+*   **[Pool Dilution Calculator](skills/pool-dilution-calculator/SKILL.md):** Projects how the chance of a specific standard-banner item falls as new items are added to the pool, over a 24-month timeline.
+*   **[Shard Economy Analyzer](skills/shard-economy-analyzer/SKILL.md):** Analyzes fragment/shard gacha mechanics, calculates mean and P90 pulls to unlock, and estimates "wasted shard" overshoot for variable drops.
+*   **[Lootbox Compliance Generator](skills/lootbox-compliance-generator/SKILL.md):** Calculates a "Consolidated Drop Rate" disclosure table and a per-jurisdiction risk check (Apple, Google, Japan, China, Belgium, Netherlands, UK). Have the output reviewed by a lawyer before publishing.
+*   **[Kompu Gacha Risk Detector](skills/kompu-gacha-detector/SKILL.md):** Checks event mechanics against the three-condition kompu gacha (complete-the-set) definition and calculates the cost curve of the final missing piece.
+*   **[Battle Pass ROI Calculator](skills/battle-pass-roi-calculator/SKILL.md):** Calculates the Premium Currency Equivalent (PCE) per player segment to test whether a Battle Pass's advertised value multiplier holds.
 
 ## Example Use Cases (Gacha Pity Auditor)
 
-The auditor adapts to various monetization models and economic complexities. Below are two hypothetical examples demonstrating how the auditor dissects mechanics and uncovers hidden risks.
+Two hypothetical banners. The effective rates and costs below are computed with the formula under the table and checked with `scripts/pity_math.py`. The risk and recommendation rows are illustrative judgments, not model output.
 
 | Metric | "Celestial Protocol" (Midcore RPG) | "Merge Mayor Tycoon" (Hybrid Casual) |
 | :--- | :--- | :--- |
 | **Genre & Monetization** | Character-collector Gacha. High ARPDAU, deep economy. | Merge/Idle game. Ads + microtransactions, broad appeal. |
 | **Gacha Structure** | "Weapon Banner" with a 0.8% base rate. Soft pity at 60 pulls, hard pity at 80. Features a 75/25 win/loss ratio. | "Mystery Lootbox" with a 2% base rate for a Legendary item. No soft pity. Hard pity at 50 boxes. |
 | **Cost Per Pull** | $2.50 USD (Premium Currency) | $0.99 USD (Direct purchase or earned via gameplay) |
-| **Auditor Discovery (EDR)** | Calculates the true drop rate at ~1.4% due to the aggressive soft pity curve. | Calculates EDR exactly at 2.0% until pull 50, showing the pity is a hard safety net rather than a rate boost. |
-| **Identified Risk**| **Economy Risk:** The 75/25 split combined with the early soft pity (60) makes weapons *too cheap* on average. Whales will max out the system faster than expected, reducing the long-term revenue tail. | **Player Experience Risk:** Because there is no soft pity, players face a severe "luck gap." A lucky player spends $1, while an unlucky player spends $50. High risk of churn for non-whales who hit the $50 ceiling. |
-| **Recommended Action** | *Recommendation:* Shift soft pity to 65 pulls and adjust the rate curve to protect the perceived premium value of weapons. | *Recommendation:* Introduce a mild soft pity at 35 pulls to smooth out the distribution and prevent the extreme $1 vs $50 disparity, keeping casual spenders engaged. |
+| **Effective Drop Rate (EDR)** | 1.69% from hard pity alone (59.3 expected pulls, about $148). Soft pity from pull 60 raises the rate further; the exact figure depends on the ramp model. | 3.15% (31.8 expected boxes, about $31.47). The 2% base rate understates the real rate because hard pity at 50 lifts it. |
+| **Cost Spread** | Ignoring soft pity: median 80 pulls ($200) and worst case 80 pulls ($200), because 53% of players reach pull 80 without a hit. Soft pity pulls the median below 80. | Median 35 boxes ($34.65), P90 50 boxes ($49.50), worst case 50 boxes ($49.50). |
+| **Identified Risk** | **Economy Risk:** The 75/25 split combined with the early soft pity (60) makes weapons *too cheap* on average. Whales will max out the system faster than expected, reducing the long-term revenue tail. | **Player Experience Risk:** Because there is no soft pity, players face a severe "luck gap." A lucky player spends $0.99, while an unlucky player spends $49.50. High risk of churn for non-whales who hit the ceiling. |
+| **Recommended Action** | *Recommendation:* Shift soft pity to 65 pulls and adjust the rate curve to protect the perceived premium value of weapons. | *Recommendation:* Introduce a mild soft pity at 35 boxes to smooth out the distribution and narrow the $0.99 to $49.50 spread, keeping casual spenders engaged. |
+
+With base rate `p` and hard pity on pull `N` (no soft pity):
+
+```
+expected pulls = (1 - (1 - p)^N) / p
+effective rate = 1 / expected pulls
+
+Celestial Protocol: (1 - 0.992^80) / 0.008 = 59.26 pulls  ->  1 / 59.26 = 1.69%
+Merge Mayor:        (1 - 0.98^50)  / 0.02  = 31.79 boxes  ->  1 / 31.79 = 3.15%
+```
+
+Soft pity changes the per-pull rate, so the closed form no longer applies. `scripts/pity_math.py` computes the exact distribution pull by pull for any ramp.
+
+## Checking the Math
+
+LLMs make arithmetic slips on pity math. A chat run without the script can be off by about 2% on pull counts and dollar figures (the largest miss in our test runs was 1.3%: a P90 of 153 pulls against an exact 155). For exact numbers, use [`scripts/pity_math.py`](scripts/pity_math.py). Use it to check any report, or give it to a model that can run code. The Pity Auditor, Sparking vs. Pity Simulator and Lootbox Compliance Generator prompts tell the model to use it when it has a code tool, to flag its numbers as unverified when it does not, and to write every ratio as the two numbers it divides (`$232.50 / $121.50 = 1.91×`).
+
+```bash
+# Test case: 0.6% base, +2% per pull from pull 70, hard pity at 90,
+# 50/50 split, 150 gems per pull, 100 gems = $1
+python3 scripts/pity_math.py --base 0.006 --hard 90 --soft-start 70 --soft-step 0.02 \
+    --win-rate 0.5 --cost 150 --per-usd 100
+```
+
+It prints expected pulls, effective rate, P50, P90 and worst case for the rarity hit and the featured item, plus a 100,000-trial Monte Carlo check, and exits with an error if the exact and simulated means differ by more than 2%. Add `--expected` to print fresh and guaranteed 50/50 states side by side in the format `check_output.py` reads. It needs Python 3.8+ and no packages. Run `python3 scripts/pity_math.py --help` for linear, exponential and stepped ramps.
+
+### Checking a saved model output
+
+The Pity Auditor ends every report with a JSON numbers block. [`scripts/check_output.py`](scripts/check_output.py) compares that block with the test case's entry in [`skills/gacha-pity-auditor/expected_values.json`](skills/gacha-pity-auditor/expected_values.json) (generated by `pity_math.py --expected`), checks every stated ratio, and flags comparisons that do not show their two numbers. A bare multiplier such as `1.91×` passes only if the same ratio was shown in full earlier in the output. For the minimal test case it also checks that soft pity was not applied and that the output asks for the ramp:
+
+```bash
+python3 scripts/check_output.py my_output.md skills/gacha-pity-auditor/expected_values.json \
+    --case test_case_minimal.md
+```
+
+Tolerances: P50, P90 and worst-case pulls must match exactly; expected pulls within 0.1; effective rate within 0.01 percentage points; currency and USD within 0.5%; a stated ratio within 1% of the quotient of its two numbers. It exits 1 on any failure.
+
+**Test results.** In the five latest test runs with no code tool (Claude through the Claude Code CLI), three produced a full report: one on `test_case.md` and two on `test_case_minimal.md`. All three pass `check_output.py` with every number exact, and the minimal runs correctly fell back to hard-pity-only worst-case costs and asked for the ramp. The other two stopped at the start, announcing they would look for `pity_math.py` instead of computing. The CLI adds environment context that an ordinary chat does not, which is the likely cause, so re-check this in your own chat app. In earlier runs, before the prompt changes, one report had four wrong numbers.
+
+## Try It
+
+Two test cases describe the same banner (0.6% base rate, soft pity from pull 70, hard pity at 90, 50/50 rule, 150 gems per pull, 100 gems = $1):
+
+- [`test_case.md`](skills/gacha-pity-auditor/test_case.md) gives every input: a linear ramp of +2% per pull, a fresh 50/50 state and direct purchase. Exact values: any SSR 62.1 expected pulls (1.61%), P50 74, P90 82, worst case 90. Featured character, fresh state: 93.1 expected pulls (1.07%), P50 81, P90 155, worst case 180.
+- [`test_case_minimal.md`](skills/gacha-pity-auditor/test_case_minimal.md) leaves out the soft pity ramp, the 50/50 state and the purchase method. The skill should still finish: it computes with hard pity only and labels the figures worst-case costs (soft pity can only lower them), reports fresh and guaranteed states side by side, assumes direct purchase, and asks for the ramp. Exact worst-case values: any SSR 69.7 expected pulls (1.43%), P50, P90 and worst case all 90 pulls ($135.00). Featured character, fresh state: 104.5 expected pulls ($156.82), P50 90, P90 180, worst case 180.
+
+The Pity Auditor halts only when a banner design input is missing: base rate, hard pity threshold, or soft pity start. For anything else, including the ramp, it states a default in Section 0 and continues.
 
 ## Installation & Usage
 
-These skills are completely platform-agnostic and are designed to be used as System Prompts or Custom GPT instructions.
+Each skill is a plain-text prompt for use as a system prompt or custom instructions.
 
-1. Navigate to the `skills/` directory and open the `SKILL.md` file for the tool you want to use.
-2. Copy the text starting from `# [Name] - System Prompt`.
+1. Open the `SKILL.md` file for the tool you want in the `skills/` directory.
+2. Copy the text starting from the `# [Name] - System Prompt` heading.
+
+A current reasoning-capable model works best, for example any current Claude, GPT or Gemini model.
 
 ### ChatGPT (Custom GPT)
-1. Go to "Explore" > "Create a GPT".
-2. Paste the copied `SKILL.md` contents into the **Instructions** box.
+1. Go to **GPTs** > **Create**, then open the **Configure** tab.
+2. Paste the copied text into the **Instructions** box.
 
-### Anthropic Claude (Projects / System Prompt)
+Every `SKILL.md` is under 7,500 characters (a test enforces this), so each fits the GPT builder's 8,000-character Instructions limit. To let the GPT run the pity math itself, also upload `scripts/pity_math.py` as a Knowledge file and turn on Code Interpreter.
+
+### Claude (Projects)
 1. Create a new Project in Claude.
-2. Under "Custom Instructions", paste the `SKILL.md` contents.
+2. Paste the copied text into the project's **Instructions**.
 
-### Google Gemini (Gems / Advanced Prompting)
-1. Create a new "Gem" in Gemini Advanced.
-2. Paste the `SKILL.md` into the custom instructions area.
+### Google Gemini (Gems)
+1. In the Gemini app, create a new **Gem**.
+2. Paste the copied text into the Gem's **Instructions**.
+
+## Known limitations
+
+- **Some runs stop instead of computing.** In 6 runs of `test_case_minimal.md` with no code tool (Claude through the Claude Code CLI), 4 finished with every number exact; 2 stopped at the start, saying they would run or look for `scripts/pity_math.py`. The CLI adds environment details that make the model believe it can run code, which an ordinary chat does not, so this may not happen in a chat app. If it does, ask the model to compute the numbers itself.
 
 ## License
-This project is licensed under the MIT License - see below for details.
-
-```text
-MIT License
-
-Copyright (c) 2026
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Rahul M Shah.
