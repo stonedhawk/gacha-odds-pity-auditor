@@ -69,7 +69,7 @@ python3 scripts/check_output.py my_output.md skills/gacha-pity-auditor/expected_
 
 Tolerances: P50, P90 and worst-case pulls must match exactly; expected pulls within 0.1; effective rate within 0.01 percentage points; currency and USD within 0.5%; a stated ratio within 1% of the quotient of its two numbers. It exits 1 on any failure.
 
-**Test results.** In the five latest test runs with no code tool (Claude through the Claude Code CLI), three produced a full report: one on `test_case.md` and two on `test_case_minimal.md`. All three pass `check_output.py` with every number exact, and the minimal runs correctly fell back to hard-pity-only worst-case costs and asked for the ramp. The other two stopped at the start, announcing they would look for `pity_math.py` instead of computing. The CLI adds environment context that an ordinary chat does not, which is the likely cause, so re-check this in your own chat app. In earlier runs, before the prompt changes, one report had four wrong numbers.
+**Test results.** In the five latest test runs with no code tool (Claude through the Claude Code CLI), three produced a full report: one on `test_case.md` and two on `test_case_minimal.md`. All three pass `check_output.py` with every number exact, and the minimal runs correctly fell back to hard-pity-only worst-case costs and asked for the ramp. The other two stopped at the start, announcing they would look for `pity_math.py` instead of computing. The CLI adds environment context that an ordinary chat does not, which is the likely cause. In chat apps, 6 of 6 runs on `test_case_minimal.md` finished with every number exact (see Known limitations). In earlier runs, before the prompt changes, one report had four wrong numbers.
 
 ## Try It
 
@@ -105,7 +105,9 @@ Every `SKILL.md` is under 7,500 characters (a test enforces this), so each fits 
 
 ## Known limitations
 
-- **Some runs stop instead of computing.** In 6 runs of `test_case_minimal.md` with no code tool (Claude through the Claude Code CLI), 4 finished with every number exact; 2 stopped at the start, saying they would run or look for `scripts/pity_math.py`. The CLI adds environment details that make the model believe it can run code, which an ordinary chat does not, so this may not happen in a chat app. If it does, ask the model to compute the numbers itself.
+- **Runs through the Claude Code CLI can stop instead of computing.** In 6 runs of `test_case_minimal.md` through the CLI with no code tool, 4 finished with every number exact; 2 stopped at the start, saying they would run or look for `scripts/pity_math.py`. The CLI adds environment details that make the model believe it can run code. If a run stops, ask the model to compute the numbers itself.
+- **Chat apps finished every run.** In October 2026, `test_case_minimal.md` ran 3 times in a Claude Project (code execution on) and 3 times in a ChatGPT Project, with the Pity Auditor prompt as the project instructions. All 6 finished. All 6 numbers blocks pass `check_output.py` with every value exact, all 6 use hard pity only, and all 6 ask for the ramp. Two of the Claude runs first tried to run `scripts/pity_math.py`, then computed the numbers themselves when it was missing.
+- **Ratio formatting can slip.** In 2 of those 6 chat runs, `check_output.py` flagged one ratio line each: one put a word between the two numbers (`EDR 1.43% / base 0.60% = 2.39×`), and one showed `2.00×` in a summary card before writing the ratio out in full. Both values were correct.
 
 ## License
 This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Rahul M Shah.
